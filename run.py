@@ -1,5 +1,6 @@
 import gspread
 from google.oauth2.service_account import Credentials
+from pprint import pprint
 
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -22,7 +23,7 @@ def get_sales_data():
         print('Example: 10, 20, 30, 40, 50, 60\n')
 
         data_str = input('Enter your data here: ')
-        print(f'The data provided is {data_str}')
+        
 
         sales_data = data_str.split(',')
 
@@ -30,7 +31,7 @@ def get_sales_data():
             print('Data is valid')
             break
         
-        return sales_data
+    return sales_data
 
 
          
@@ -40,7 +41,8 @@ def validate_data(values):
     """
     Inside the tyr, converts all string values into integers.
     Raises ValueError if string cannot be converted into int,
-    or if there aren't exactly 6 values.
+    or if there aren't exactly 6 values. 
+    The loop will repeatedly request data until it is valid
     """
     try:
         [int(value) for value in values]
@@ -54,7 +56,40 @@ def validate_data(values):
     
     return True
 
-    
+def update_sales_worksheet(data):
+    """
+    Update sales worksheet, add a new row with the list data provided
+    """ 
+    print('Updating sales worksheet...\n')
 
-data = get_sales_data()
+    sales_worksheet = SHEET.worksheet('sales')
+    sales_worksheet.append_row(data)
+    print('Sales worksheet updated successfully.\n')
+
+def calculate_surplus_data(sales_row):
+    """
+    Compare sales with stock and calculate the surplus for each item type.
+    The surplus is defined at the sales figure substracted from the stock:
+    -positive surplus indicates waste
+    -negative surplus indicates extra made when stock was sold out
+    """
+    print('Calculating surplus data...\n')
+    stock = SHEET.worksheet('stock').get_all_values()
+    stock_row = stock[-1]
+    print(stock_row)
+
+
+
+def main():
+    """
+    Run all program functions
+    """
+    
+    data = get_sales_data()
+    sales_data = [int(num) for num in data]
+    update_sales_worksheet(sales_data)
+    calculate_surplus_data(sales_data)
+
+print('Welcome to Love Sandwiches Data Automation')
+main()
 
